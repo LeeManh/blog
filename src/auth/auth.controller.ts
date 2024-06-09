@@ -6,6 +6,8 @@ import { SigninDto } from './dtos/signin.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { TokenPayload } from './types/token-payload.interface';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -22,14 +24,27 @@ export class AuthController {
   }
 
   @Post('email-confirmation')
-  async confirm(@Body() confirmationData: ConfirmEmailDto) {
+  confirm(@Body() confirmationData: ConfirmEmailDto) {
     return this.authService.confirmEmail(confirmationData.token);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@CurrentUser() user: TokenPayload) {
+  logout(@CurrentUser() user: TokenPayload) {
     return this.authService.logout(user);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.sendForgotPasswordLink(forgotPasswordDto.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.password,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

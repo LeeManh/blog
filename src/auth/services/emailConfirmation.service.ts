@@ -8,6 +8,10 @@ interface VerificationTokenPayload {
   email: string;
 }
 
+interface ForgotPasswordTokenPayload {
+  email: string;
+}
+
 @Injectable()
 export class EmailConfirmationService {
   constructor(
@@ -17,7 +21,44 @@ export class EmailConfirmationService {
     private readonly userRepository: UserRepository,
   ) {}
 
-  public sendVerificationLink(email: string) {
+  public async sendForgotPasswordLink(email: string) {
+    const payload: ForgotPasswordTokenPayload = { email };
+
+    const token = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_FORGOT_PASSWORD_SECRET'),
+      expiresIn: `${this.configService.get('JWT_FORGOT_PASSWORD_EXPIRATION_TIME')}s`,
+    });
+
+    const url = `${this.configService.get('FORGOT_PASSWORD_URL')}?token=${token}`;
+
+    const text = `To reset the password, click here: ${url}`;
+
+    return await this.emailService.sendMail({
+      to: email,
+      subject: 'Password reset',
+      text,
+    });
+  }
+
+  public async decodeForgotPasswordToken(token: string) {
+    try {
+      const payload = await this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_FORGOT_PASSWORD_SECRET'),
+      });
+
+      if (typeof payload === 'object' && 'email' in payload) {
+        return payload.email;
+      }
+      throw new BadRequestException();
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError') {
+        throw new BadRequestException('Forgot password token expired');
+      }
+      throw new BadRequestException('Bad Forgot password token');
+    }
+  }
+
+  public async sendVerificationLink(email: string) {
     const payload: VerificationTokenPayload = { email };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_VERIFICATION_TOKEN_SECRET'),
@@ -28,7 +69,7 @@ export class EmailConfirmationService {
 
     const text = `Welcome to the application. To confirm the email address, click here: ${url}`;
 
-    return this.emailService.sendMail({
+    return await this.emailService.sendMail({
       to: email,
       subject: 'Email confirmation',
       text,

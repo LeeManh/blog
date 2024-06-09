@@ -54,12 +54,16 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  private async hashPassword(password: string) {
+    return await bcrypt.hash(password, 10);
+  }
+
   public async singUp(singupDto: SignupDto) {
     const existingUser = await this.userRepository.findByEmail(singupDto.email);
     if (existingUser) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
-    const hashedPassword = await bcrypt.hash(singupDto.password, 10);
+    const hashedPassword = await this.hashPassword(singupDto.password);
 
     // create user
     const user = this.userRepository.create({
@@ -110,5 +114,32 @@ export class AuthService {
     existingUser.refreshToken = null;
 
     await this.userRepository.save(existingUser);
+  }
+
+  public async sendForgotPasswordLink(email: string) {
+    // check if user exists and email is confirmed
+    await this.verifyEmail(email);
+
+    // send password reset link
+    await this.emailConfirmationService.sendForgotPasswordLink(email);
+  }
+
+  public async resetPassword(token: string, newPassword: string) {
+    // decode token and get email
+    const email =
+      await this.emailConfirmationService.decodeForgotPasswordToken(token);
+
+    // verify email
+    const user = await this.verifyEmail(email);
+
+    // create new password hash
+    const hashedPassword = await this.hashPassword(newPassword);
+    user.password = hashedPassword;
+
+    // remove refresh token from db
+    user.refreshToken = null;
+
+    // save user to db
+    await this.userRepository.save(user);
   }
 }
