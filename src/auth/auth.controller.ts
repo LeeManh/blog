@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { SignupDto } from './dtos/signup.dto';
 import { AuthService } from './services/auth.service';
 import { ConfirmEmailDto } from './dtos/confirm-email.dto';
@@ -45,11 +45,5 @@ export class AuthController {
       resetPasswordDto.token,
       resetPasswordDto.password,
     );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  getMe() {
-    return 'Hello from me';
   }
 }

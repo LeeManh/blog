@@ -1,10 +1,12 @@
 import { Exclude } from 'class-transformer';
+import { Post } from 'src/posts/entities/post.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
@@ -28,6 +30,9 @@ export class User {
   @Column({ name: 'refresh_token', nullable: true, default: null })
   @Exclude()
   refreshToken: string;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 
   @CreateDateColumn()
   createdAt: Date;
