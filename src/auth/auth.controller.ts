@@ -4,6 +4,8 @@ import { AuthService } from './services/auth.service';
 import { ConfirmEmailDto } from './dtos/confirm-email.dto';
 import { SigninDto } from './dtos/signin.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { TokenPayload } from './types/token-payload.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +24,12 @@ export class AuthController {
   @Post('email-confirmation')
   async confirm(@Body() confirmationData: ConfirmEmailDto) {
     return this.authService.confirmEmail(confirmationData.token);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@CurrentUser() user: TokenPayload) {
+    return this.authService.logout(user);
   }
 
   @UseGuards(JwtAuthGuard)

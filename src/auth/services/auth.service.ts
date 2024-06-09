@@ -98,4 +98,17 @@ export class AuthService {
 
     await this.emailConfirmationService.confirmEmail(email);
   }
+
+  public async logout(user: TokenPayload) {
+    const existingUser = await this.userRepository.findById(user.id);
+
+    if (!existingUser) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    // remove refresh token from db
+    existingUser.refreshToken = null;
+
+    await this.userRepository.save(existingUser);
+  }
 }
