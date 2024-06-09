@@ -8,6 +8,7 @@ import { UsersModule } from 'src/users/users.module';
 import { AuthService } from './services/auth.service';
 import { EmailConfirmationService } from './services/emailConfirmation.service';
 import { EmailModule } from 'src/email/email.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -25,6 +26,6 @@ import { EmailModule } from 'src/email/email.module';
     EmailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, EmailConfirmationService],
+  providers: [AuthService, EmailConfirmationService, JwtStrategy],
 })
 export class AuthModule {}

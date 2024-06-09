@@ -25,6 +25,10 @@ export class User {
   @Column({ default: false })
   isEmailConfirmed: boolean;
 
+  @Column({ name: 'refresh_token', nullable: true, default: null })
+  @Exclude()
+  refreshToken: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
