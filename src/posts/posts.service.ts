@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
 import { Repository } from 'typeorm';
@@ -15,12 +20,16 @@ export class PostsService {
     private readonly userRepository: UserRepository,
   ) {}
 
-  private async checkOwnership(id: number, userId: number) {
+  public async checkOwnership(id: number, userId: number) {
     const post = await this.postsRepository
       .createQueryBuilder('posts')
       .where('posts.id = :id', { id })
       .leftJoinAndSelect('posts.user', 'user')
       .getOne();
+
+    if (!post) {
+      throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+    }
 
     if (post.user.id !== userId) {
       throw new ForbiddenException('You are not allowed to update this post');
@@ -49,11 +58,17 @@ export class PostsService {
   }
 
   async findPostById(id: number) {
-    return await this.postsRepository
+    const post = await this.postsRepository
       .createQueryBuilder('posts')
       .where('posts.id = :id', { id })
       .leftJoinAndSelect('posts.user', 'user')
       .getOne();
+
+    if (!post) {
+      throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+    }
+
+    return post;
   }
 
   async updatePost(

@@ -1,4 +1,5 @@
 import { Exclude } from 'class-transformer';
+import { Comment } from 'src/comments/entities/comment.entity';
 import { Post } from 'src/posts/entities/post.entity';
 import {
   Entity,
@@ -33,6 +34,9 @@ export class User {
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 
   @CreateDateColumn()
   createdAt: Date;

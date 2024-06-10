@@ -1,4 +1,4 @@
-import { Comment } from 'src/comments/entities/comment.entity';
+import { Post } from 'src/posts/entities/post.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -6,28 +6,25 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'posts' })
-export class Post {
+@Entity({ name: 'comments' })
+export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'varchar', length: 255 })
-  title: string;
 
   @Column({ type: 'text' })
   content: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => Post, (post) => post.comments)
+  @JoinColumn({ name: 'post_id' })
+  post: Post;
+
+  @ManyToOne(() => User, (user) => user.comments)
   @JoinColumn({ name: 'user_id' })
   user: User;
-
-  @OneToMany(() => Comment, (comment) => comment.post)
-  comments: Comment[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
