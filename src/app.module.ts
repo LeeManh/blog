@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { EmailModule } from './email/email.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
+import { ReactionsModule } from './reactions/reactions.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CommentsModule } from './comments/comments.module';
     EmailModule,
     PostsModule,
     CommentsModule,
+    ReactionsModule,
   ],
   controllers: [],
   providers: [],

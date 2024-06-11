@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { Comment } from 'src/comments/entities/comment.entity';
 import { Post } from 'src/posts/entities/post.entity';
+import { Reaction } from 'src/reactions/entities/reaction.entity';
 import {
   Entity,
   Column,
@@ -38,9 +39,12 @@ export class User {
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
 
-  @CreateDateColumn()
+  @OneToMany(() => Reaction, (reaction) => reaction.user)
+  reactions: Reaction[];
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

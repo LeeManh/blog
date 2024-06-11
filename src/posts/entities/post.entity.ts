@@ -1,4 +1,5 @@
 import { Comment } from 'src/comments/entities/comment.entity';
+import { Reaction } from 'src/reactions/entities/reaction.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -28,6 +29,9 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @OneToMany(() => Reaction, (reaction) => reaction.post)
+  reactions: Reaction[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
