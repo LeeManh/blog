@@ -1,14 +1,11 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reaction } from './entities/reaction.entity';
 import { Repository } from 'typeorm';
 import { TokenPayload } from 'src/auth/types/token-payload.interface';
 import { ReactionTypes } from 'src/types/enum';
 import { CreateReactionDto } from './dto/create-reaction.dto';
+import { UpdateReactionDto } from './dto/update-reaction.dto';
 
 @Injectable()
 export class ReactionsService {
@@ -20,7 +17,6 @@ export class ReactionsService {
   async createReaction(
     createReactionDto: CreateReactionDto,
     user: TokenPayload,
-    postId: number,
   ) {
     await this.reactionsRepository
       .createQueryBuilder('reaction')
@@ -29,7 +25,7 @@ export class ReactionsService {
         ...createReactionDto,
         type: createReactionDto.type ?? ReactionTypes.DEFAULT,
         user: { id: user.id },
-        post: { id: postId },
+        post: { id: createReactionDto.postId },
       })
       .execute();
 
@@ -38,45 +34,42 @@ export class ReactionsService {
     };
   }
 
-  async findReactionById(id: number) {
+  async findMyReactionInPost(postId: number, user: TokenPayload) {
     const reaction = await this.reactionsRepository
-      .createQueryBuilder('reaction')
-      .where('id = :id', { id });
-
-    if (!reaction) {
-      throw new NotFoundException('Reaction not found');
-    }
-  }
-
-  async updateReaction(
-    updateReaction: CreateReactionDto,
-    user: TokenPayload,
-    id: number,
-  ) {
-    const reaction = await this.reactionsRepository
-      .createQueryBuilder('reaction')
-      .leftJoinAndSelect('reaction.user', 'user')
-      .where('reaction.id = :id', { id })
+      .createQueryBuilder('r')
+      .where('r.post.id = :postId', { postId })
+      .andWhere('r.user.id = :userId', { userId: user.id })
       .getOne();
 
     if (!reaction) {
       throw new NotFoundException('Reaction not found');
     }
 
-    if (reaction.user.id !== user.id) {
-      throw new ForbiddenException('FORBIDDEN');
-    }
+    return reaction;
+  }
 
-    // update
-    await this.reactionsRepository
-      .createQueryBuilder('reaction')
-      .update()
-      .set(updateReaction)
-      .where('reaction.id = :id', { id })
-      .execute();
+  async getReactionsByPostId(postId: number) {
+    const reactions = await this.reactionsRepository
+      .createQueryBuilder('r')
+      .where('r.post.id = :postId', { postId })
+      .getMany();
+
+    return reactions;
+  }
+
+  async updateReaction(
+    updateReaction: UpdateReactionDto,
+    postId: number,
+    user: TokenPayload,
+  ) {
+    const reaction = await this.findMyReactionInPost(postId, user);
+
+    reaction.type = updateReaction.type;
+
+    await this.reactionsRepository.save(reaction);
 
     return {
-      message: 'Update reaction successfully',
+      message: 'Reaction updated successfully',
     };
   }
 }

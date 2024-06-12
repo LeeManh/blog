@@ -4,7 +4,6 @@ export enum VerificationStatus {
 }
 
 export enum ReactionTypes {
-  DEFAULT = -1,
-  DISLIKE = 0,
+  DEFAULT = 0,
   LIKE = 1,
 }
